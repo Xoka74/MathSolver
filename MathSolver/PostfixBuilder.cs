@@ -30,11 +30,7 @@ namespace MathSolver
                 throw new FormatException();
 
             var tokens = infixExpression.SplitWithSeparators(_priorities.Keys.ToArray());
-            foreach (var token in tokens)
-            {
-                //Console.WriteLine(token);
-            }
-            
+
             if (tokens.Length == 0)
                 return string.Empty;
 
@@ -43,10 +39,6 @@ namespace MathSolver
             var isUnary = true;
             foreach (var token in tokens)
             {
-                //Console.WriteLine($"token:|{token}|length: {token.Length}");
-
-                //Console.WriteLine(token);
-                
                 if (IsNumber(token))
                 {
                     result.Add(token);

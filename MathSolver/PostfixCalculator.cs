@@ -17,59 +17,80 @@ namespace MathSolver
             }
 
             var elements = postfixExpression.Split(' ');
-            var elementsStack = new List<BigIntComplex>();
-            var operationStack = new  List<string>();
+            var elementStack = new List<BigIntComplex>();
+            var operationStack = new List<string>();
             for (int i = 0; i < elements.Length; i++)
             {
-
+                //elementStack.PrintList();
+                Console.WriteLine($"i: {i}");
+                Console.WriteLine($"depthCount:{operationStack.Count}");
                 if (IsOperation(elements[i]))
                 {
-                    while (operationStack.Count > 0)
-                    {
-                        elementsStack[0] = PerformOperation(elementsStack[0], elementsStack[1], operationStack[^1]);
-                        operationStack.RemoveAt(operationStack.Count - 1);
-                        elementsStack.RemoveAt(1);
-                    }
-                    if (elementsStack.Count <= 1)
+                    Console.WriteLine(elements[i]);
+                    if (elementStack.Count <= 1)
                         throw new FormatException("Not enough elements to perform an operation");
-                    var firstNumber = elementsStack[^1];
-                    elementsStack.RemoveAt(elementsStack.Count - 1);
-                    var secondNumber = elementsStack[^1];
-                    elementsStack.RemoveAt(elementsStack.Count - 1);
-                    elementsStack.Add(PerformOperation(secondNumber, firstNumber, elements[i]));
-                }
-                else if (i + 1 == elements.Length)
-                {
-                    elementsStack.Add(BigIntComplex.Parse(elements[i]));
-                    while (operationStack.Count > 0)
-                    {
-                        elementsStack[0] = PerformOperation(elementsStack[0], elementsStack[1], operationStack[^1]);
-                        operationStack.RemoveAt(operationStack.Count - 1);
-                        elementsStack.RemoveAt(1);
-                    }
+                    var firstNumber = elementStack[^1];
+                    elementStack.RemoveAt(elementStack.Count - 1);
+                    var secondNumber = elementStack[^1];
+                    elementStack.RemoveAt(elementStack.Count - 1);
+                    elementStack.Add(PerformOperation(secondNumber, firstNumber, elements[i]));
                 }
                 else if (IsFunction(elements[i]))
                 {
-                    if (elementsStack.Count > 1)
+                    if (IsFunction(elements[i + 1]))
                     {
-                        while (operationStack.Count > 0)
+                        Console.WriteLine("this element and next element is also a function");
+                        operationStack.Add(elements[i]);
+                    }
+                    else if (IsFunction(elements[i + 2]))
+                    {
+                        Console.WriteLine("this element and next after next element is also a function");
+                        operationStack.Add(elements[i]);
+                        elementStack.Add(BigIntComplex.Parse(elements[i + 1]));
+                        i = i + 1;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"element: {elements[i]} is function");
+                        var element1 = BigIntComplex.Parse(elements[i + 1]);
+                        var element2 = BigIntComplex.Parse(elements[i + 2]);
+                        elementStack.Add(PerformOperation(element1, element2, elements[i]));
+                        elementStack.PrintList();
+                        if (operationStack.Count == 0)
                         {
-                            elementsStack[0] = PerformOperation(elementsStack[0], elementsStack[1], operationStack[^1]);
-                            Console.WriteLine(elementsStack[0]);
+                            Console.WriteLine("not a nested function");
+                            i = i + 2; 
+                        }
+                        else
+                        {
+                            Console.WriteLine($"nested function, perform operation: {operationStack[^1]} on elements: {elementStack[^2]} and {elementStack[^1]}");
+                            operationStack.PrintList();
+                            elementStack[^2] = PerformOperation(elementStack[^2], elementStack[^1], operationStack[^1]);
+                            elementStack.RemoveAt(elementStack.Count - 1);
                             operationStack.RemoveAt(operationStack.Count - 1);
-                            elementsStack.RemoveAt(1);
+                            i = i + 2;
                         }
                     }
-                    operationStack.Add(elements[i]);
                 }
                 else
-                    elementsStack.Add(BigIntComplex.Parse(elements[i]));
+                {
+                    if (operationStack.Count != 0)
+                    {
+                        Console.WriteLine($"nested function, should calculate {operationStack[^1]} on: {elementStack[0]} and {elementStack[1]}");
+                        elementStack[0] = PerformOperation(elementStack[0], elementStack[1], operationStack[^1]);
+                        elementStack.RemoveAt(elementStack.Count - 1);
+                        operationStack.RemoveAt(operationStack.Count - 1);
+                    }
+
+                    elementStack.Add(BigIntComplex.Parse(elements[i]));
+                }
+                
+                Console.WriteLine("-----------------------");
             }
-
-            if (elementsStack.Count == 2)
+            
+            if (elementStack.Count == 2)
                 throw new FormatException();
-
-            return elementsStack[0].ToString();
+            return elementStack[0].ToString();
         }
 
         private static bool IsOperation(string element) => element is "+" or "-" or "*" or "/" or "%";
