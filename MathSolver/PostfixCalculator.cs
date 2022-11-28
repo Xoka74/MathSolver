@@ -55,11 +55,11 @@ namespace MathSolver
                         var element1 = BigIntComplex.Parse(elements[i + 1]);
                         var element2 = BigIntComplex.Parse(elements[i + 2]);
                         elementStack.Add(PerformOperation(element1, element2, elements[i]));
-                        elementStack.PrintList();
                         if (operationStack.Count == 0)
                         {
+                            // BUG asd
                             Console.WriteLine("not a nested function");
-                            i = i + 2; 
+                            i = i + 2;
                         }
                         else
                         {
